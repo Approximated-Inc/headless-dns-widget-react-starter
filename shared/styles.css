@@ -17,7 +17,7 @@ input[readonly] { background: #f9fafb; font-family: ui-monospace, monospace; }
 button { font: inherit; font-weight: 600; min-height: 44px; border: 1px solid transparent; border-radius: 6px; padding: 10px 16px; background: #FB5168; color: #111827; cursor: pointer; }
 button:hover { background: #DA3551; color: #FFFFFF; }
 button.secondary { background: white; border-color: #d1d5db; }
-button.secondary:hover { background: #f3f4f6; }
+button.secondary:hover { background: #f3f4f6; color: #111827; }
 button:disabled { opacity: .6; cursor: default; }
 button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #9f1239; outline-offset: 3px; }
 a { color: #374151; text-underline-offset: 3px; overflow-wrap: anywhere; }

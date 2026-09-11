@@ -10,6 +10,10 @@ The starter includes provider instructions, copyable record values, optional aut
 
 This starter targets the upcoming headless DNS API release. The hosted `headless.v1.js` client and instructions endpoints must be deployed before live DNS setup works. You can install the starter, run its interface, build it, and run its tests in the meantime. The tests use stubs and do not need an API key or live DNS.
 
+## Hosted demo
+
+[Try the React demo](https://cloud.approximated.app/dnswidget/demo/headless/react) to explore this interface without installing the starter or supplying an API key. It uses an example CNAME target and Approximated’s public demo token endpoint. The hosted demo becomes available with the headless API release described above.
+
 ## Run locally
 
 Requirements: Node.js 22.12 or newer, npm, and an Approximated cluster API key for live requests. CI uses the Node version in `.node-version`.
