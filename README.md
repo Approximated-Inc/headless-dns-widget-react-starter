@@ -4,7 +4,7 @@ Build a DNS setup flow in your own React interface using the [Approximated headl
 
 This is a **headless** integration. React renders the interface; Approximated supplies provider-specific instructions and DNS verification results as JSON. It does not embed the ready-made widget or an iframe.
 
-The starter includes provider instructions, copyable record values, optional automatic setup links, verification results, retries, and a local server endpoint that creates short-lived widget tokens.
+The starter includes provider instructions, copyable record values, optional automatic setup links, verification results, retries, and a local server endpoint that creates short-lived widget tokens. Three selectable designs show different ways to present the same DNS setup flow.
 
 ## Availability
 
@@ -42,15 +42,26 @@ Open **http://127.0.0.1:5173** exactly as printed by the server. The local serve
 
 The browser loads `https://cloud.approximated.app/dnswidget/headless.v1.js`. Your Node server uses the API key to obtain a short-lived token, and the browser uses that token to request instructions and verify records.
 
+## Design variations
+
+Use the **Simple**, **Dashboard**, and **Guided** tabs to explore the layouts:
+
+- **Simple** keeps the domain form, provider instructions, and verification in calm, stacked cards.
+- **Dashboard** puts the domain controls beside a wider record workspace, with copyable fields in a compact grid and provider instructions available per record. It becomes a single column on smaller screens.
+- **Guided** presents numbered sections for the domain, provider changes, and verification, with more space and a teal accent. Steps only show DNS completion after a successful verification response.
+
+Switching designs preserves the entered domain, active requests, provider instructions, errors, and verification results. The tabs support Left/Right Arrow, Home, and End keys. All three designs use the same session controller and real API responses.
+
 ## Adapt the starter
 
 - `src/`: the React interface and entry point.
 - `shared/session.js`: records to request, session state, token expiry, cancellation, and protection against stale responses.
 - `shared/browser.js`: the public CNAME target and headless client adapter.
-- `shared/styles.css`: the interface styles, including the Approximated carnation palette.
+- `shared/styles.css`: shared styles for all three designs, including the default Approximated carnation palette.
+- `shared/design.js`: keyboard navigation and guided-step presentation derived from the session state.
 - `token-server.mjs`: `POST /api/dns-widget-token`, which returns only the token and disables response caching.
 - `server.mjs`: the local Vite and token server.
-- `test/`: token endpoint and session lifecycle regression tests.
+- `test/`: token endpoint, session lifecycle, keyboard navigation, and guided-step regression tests.
 
 Edit the `records` array in `shared/session.js` to request the A, CNAME, or TXT records your app needs. The default requests one CNAME for the domain the customer enters. In this API, `@` means the **full supplied domain**, including any subdomain. For `shop.customer.com`, Cloudflare's display name is `shop`.
 

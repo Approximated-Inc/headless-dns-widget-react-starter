@@ -1,56 +1,42 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { createDnsSetup, initialState, safeLink, recordAddress, actualValues, verificationMessages } from '../shared/session.js';
+import { useEffect, useRef, useState } from 'react';
+import { createDnsSetup, initialState } from '../shared/session.js';
 import { cnameTarget, createClient } from '../shared/browser.js';
+import { designOptions, nextDesign, guidedSteps } from '../shared/design.js';
+import { DomainForm, ProviderInstructions, SessionNotices, VerificationPanel, GuideSection } from './components.jsx';
 
-function ExternalLink({ href, children }) {
-  const url = safeLink(href);
-  return url ? <a href={url} target="_blank" rel="noopener noreferrer">{children}</a> : <span>{children}</span>;
-}
-
-function FieldStep({ step }) {
-  const id = useId();
-  const input = useRef(null);
-  const [message, setMessage] = useState('');
-  async function copy() {
-    try { await navigator.clipboard.writeText(step.value); setMessage('Copied'); }
-    catch { input.current?.select(); setMessage('Select and copy this value.'); }
+function DesignTabs({ design, onChange }) {
+  const tabs = useRef({});
+  function navigate(event) {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const next = nextDesign(design, event.key);
+    if (!next) return;
+    event.preventDefault();
+    onChange(next);
+    tabs.current[next]?.focus();
   }
-  if (step.value === '') return <p>{step.text}</p>;
-  return <div className="field-step">
-    <label htmlFor={id}>{step.text}</label>
-    <div className="copy-field">
-      <input id={id} ref={input} aria-label={step.label} value={step.value} readOnly />
-      <button type="button" className="secondary" onClick={copy} aria-label={`Copy ${step.label}`}>Copy</button>
+  return <div className="design-picker">
+    <span className="design-label" id="design-label">Choose a design</span>
+    <div className="design-tabs" role="tablist" aria-labelledby="design-label" onKeyDown={navigate}>
+      {designOptions.map((option) => <button type="button" className="design-tab" role="tab" key={option.id}
+        id={`design-tab-${option.id}`} ref={(node) => { tabs.current[option.id] = node; }}
+        aria-selected={design === option.id} aria-controls="dns-design-panel" tabIndex={design === option.id ? 0 : -1}
+        onClick={() => onChange(option.id)}>{option.label}</button>)}
     </div>
-    <span className="copy-status" role="status">{message}</span>
+    <p className="design-description">{designOptions.find((option) => option.id === design).description}</p>
   </div>;
 }
 
-function ProviderInstructions({ result }) {
-  return result.domains.map((group) => <section className="panel" key={group.apex_domain}>
-    <h2>{group.apex_domain}</h2>
-    <p>{group.provider.message}</p>
-    {group.provider.message_link && <p><ExternalLink href={group.provider.message_link.url}>{group.provider.message_link.text}</ExternalLink></p>}
-    {safeLink(group.provider.login_url) && <p><ExternalLink href={group.provider.login_url}>Open {group.provider.name} DNS settings</ExternalLink></p>}
-    {group.provider.lookup_status !== 'ok' && <p className="notice">We could not complete the provider lookup. Use these general instructions, check the domain spelling, or reload the instructions.</p>}
-    {group.records.map((record, recordIndex) => <article className="record" key={`${record.domain}-${record.type}-${record.host}-${recordIndex}`}>
-      <h3>{record.title}</h3>
-      {safeLink(record.automation?.url) && <p><ExternalLink href={record.automation.url}>Set up this record automatically</ExternalLink></p>}
-      <details open={!safeLink(record.automation?.url)}>
-        <summary>Manual steps</summary>
-        <ol className="steps">{record.steps.map((step, index) => <li key={index}>
-          {step.kind === 'field' ? <FieldStep step={step} /> : step.kind === 'link'
-            ? <ExternalLink href={step.url}>{step.text}</ExternalLink> : <p>{step.text}</p>}
-        </li>)}</ol>
-      </details>
-    </article>)}
-  </section>);
-}
+const phaseLabels = {
+  idle: 'Awaiting instructions', loading: 'Loading instructions', ready: 'Instructions ready',
+  error: 'Needs attention', checking: 'Checking DNS', complete: 'DNS verified', partial: 'Partially matched', failed: 'Not matched yet'
+};
 
 export default function App() {
   const [domain, setDomain] = useState('shop.customer.com');
   const [state, setState] = useState(initialState);
+  const [design, setDesign] = useState('simple');
   const session = useRef(null);
+  // Design selection never recreates the client or interrupts its active requests.
   useEffect(() => {
     const activeSession = createDnsSetup({ onChange: setState, createClient });
     session.current = activeSession;
@@ -59,42 +45,43 @@ export default function App() {
   const busy = state.phase === 'loading' || state.phase === 'checking';
   const start = () => session.current?.start(domain, cnameTarget);
   const retry = () => state.error?.operation === 'verify' && !state.error.restart ? session.current?.verify() : start();
+  const changeDomain = (value) => { setDomain(value); session.current?.reset(); };
+  const form = <DomainForm domain={domain} onDomainChange={changeDomain} target={cnameTarget} phase={state.phase} busy={busy} start={start} />;
+  const notices = <SessionNotices state={state} busy={busy} retry={retry} />;
+  const instructions = state.result && <div id="provider-instructions"><ProviderInstructions result={state.result} design={design} /></div>;
+  const verification = state.result && <VerificationPanel state={state} busy={busy} verify={() => session.current?.verify()} start={start} />;
+  const guide = guidedSteps(state);
 
-  return <main>
-    <header><p className="eyebrow">Custom domain setup</p><h1>Connect your domain</h1><p>Add a DNS record to point your domain to this application.</p></header>
-    <form id="domain-form" className="panel" onSubmit={(event) => { event.preventDefault(); start(); }}>
-      <label htmlFor="domain">Your custom domain</label>
-      <input id="domain" name="domain" type="text" autoCapitalize="none" autoCorrect="off" spellCheck="false" required value={domain}
-        onChange={(event) => { setDomain(event.target.value); session.current?.reset(); }} aria-describedby="domain-help" />
-      <p id="domain-help" className="muted">For example, shop.customer.com. The CNAME target is <code>{cnameTarget}</code>.</p>
-      <button id="load-instructions" type="submit" disabled={busy}>{state.phase === 'loading' ? 'Loading instructions…' : 'Get setup instructions'}</button>
-    </form>
-    <div aria-live="polite" role="status">{state.phase === 'loading' && <p>Finding your DNS provider and preparing the steps…</p>}</div>
-    {state.renewalWarning && <p className="notice" role="status">{state.renewalWarning}</p>}
-    {state.error && <section className="panel error" role="alert">
-      <p>{state.error.message}</p>
-      {state.error.details.length > 0 && <ul>{state.error.details.map((detail, index) => <li key={index}>Record {detail.index + 1}, {detail.field}: {detail.message}</li>)}</ul>}
-      <button id="retry-request" type="button" onClick={retry} disabled={busy}>{state.error.restart ? 'Restart setup' : 'Try again'}</button>
-    </section>}
-    {state.result && <>
-      <div id="provider-instructions"><ProviderInstructions result={state.result} /></div>
-      <section className="panel" aria-labelledby="verify-heading">
-        <h2 id="verify-heading">Check your DNS changes</h2>
-        <p>Save the record at your DNS provider, then check it here. DNS updates can take time to become visible.</p>
-        <div className="actions">
-          <button id="verify-records" type="button" onClick={() => session.current?.verify()} disabled={busy || state.phase === 'complete' || state.error?.restart}>
-            {state.phase === 'checking' ? 'Checking DNS…' : state.phase === 'complete' ? 'DNS verified' : 'Check DNS records'}
-          </button>
-          <button type="button" className="secondary" onClick={start} disabled={busy}>Reload instructions</button>
+  return <main data-design={design}>
+    <header className="demo-header"><p className="eyebrow">Custom domain setup</p><h1>Connect your domain</h1><p>Add a DNS record to point your domain to this application.</p></header>
+    <DesignTabs design={design} onChange={setDesign} />
+    <div id="dns-design-panel" className="design-panel" role="tabpanel" aria-labelledby={`design-tab-${design}`} tabIndex={0}>
+      {design === 'guided' ? <div className="guided-layout">
+        <GuideSection number={1} title="Choose your domain" step={guide[0]}>{form}{notices}</GuideSection>
+        <GuideSection number={2} title="Add the record at your DNS provider" step={guide[1]}>
+          {instructions || <div className="empty-state"><p>Start with your domain above. We’ll find your provider and show the values to enter, one field at a time.</p></div>}
+        </GuideSection>
+        <GuideSection number={3} title="Make sure your DNS records match" step={guide[2]}>
+          {verification || <div className="empty-state"><p>After saving your changes, return here to check the records. We’ll show exactly what DNS returns.</p></div>}
+        </GuideSection>
+      </div> : <div className="setup-layout">
+        <div className="setup-controls">
+          {form}{notices}
+          {design === 'dashboard' && <p className="sidebar-note"><strong>Your provider stays in control</strong>Get the record values here, then save the changes in your DNS provider’s settings.</p>}
         </div>
-        <p id="verification-status" role="status" aria-live="polite">{state.phase === 'checking' ? 'Looking up the current DNS records…' : verificationMessages[state.phase]}</p>
-        {state.check && <ul id="verification-records" className="checks">{state.check.records.map((record, index) => <li key={index}>
-          <strong>{recordAddress(record)} · {record.type}</strong>
-          <span>{record.match === true ? 'Matches' : 'Not matched yet'}</span>
-          <div>Expected: <code>{record.match_against}</code></div>
-          <div>Found: <code>{actualValues(record)}</code></div>
-        </li>)}</ul>}
-      </section>
-    </>}
+        <div className="setup-workspace">
+          {design === 'dashboard' && <div className="workspace-header">
+            <div><h2>DNS records</h2><p>Provider instructions and verification</p></div>
+            <span className="status-badge" data-phase={state.phase}>{state.error ? 'Needs attention' : phaseLabels[state.phase]}</span>
+          </div>}
+          {instructions || <div className="empty-state">
+            {design === 'dashboard' && <span className="empty-symbol" aria-hidden="true">↗</span>}
+            <h2>{design === 'dashboard' ? 'Your record workspace is ready' : 'Your setup steps will appear here'}</h2>
+            <p>Enter your custom domain and get the instructions to see your DNS provider and the exact record values.</p>
+          </div>}
+          {verification}
+        </div>
+      </div>}
+    </div>
   </main>;
 }
