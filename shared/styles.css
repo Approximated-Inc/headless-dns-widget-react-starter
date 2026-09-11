@@ -1,0 +1,40 @@
+:root { color-scheme: light; font-family: system-ui, sans-serif; color: #111827; background: #f9fafb; line-height: 1.6; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 800px; padding: 48px 24px; margin: 0 auto; }
+h1, h2, h3 { line-height: 1.3; margin: 0 0 16px; overflow-wrap: anywhere; }
+h1 { font-size: clamp(2rem, 5vw, 2.75rem); letter-spacing: -0.035em; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.1rem; }
+p { margin: 12px 0; }
+header { margin-bottom: 28px; }
+header > p:last-child, .muted { color: #4b5563; }
+.eyebrow { font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: #6b7280; }
+.panel { border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background: white; margin: 20px 0; }
+label { display: block; font-weight: 600; margin-bottom: 8px; }
+input { width: 100%; min-width: 0; font: inherit; font-size: 16px; padding: 10px 12px; border: 1px solid #9ca3af; border-radius: 6px; color: #111827; background: white; }
+input[readonly] { background: #f9fafb; font-family: ui-monospace, monospace; }
+button { font: inherit; font-weight: 600; min-height: 44px; border: 1px solid transparent; border-radius: 6px; padding: 10px 16px; background: #FB5168; color: #111827; cursor: pointer; }
+button:hover { background: #DA3551; color: #FFFFFF; }
+button.secondary { background: white; border-color: #d1d5db; }
+button.secondary:hover { background: #f3f4f6; }
+button:disabled { opacity: .6; cursor: default; }
+button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #9f1239; outline-offset: 3px; }
+a { color: #374151; text-underline-offset: 3px; overflow-wrap: anywhere; }
+code { overflow-wrap: anywhere; }
+.record { margin-top: 28px; padding-top: 24px; border-top: 1px solid #e5e7eb; }
+.steps { padding-left: 24px; }
+.steps > li { padding-left: 4px; margin: 16px 0; }
+.steps p { margin: 0; }
+summary { cursor: pointer; font-weight: 600; }
+.copy-field, .actions { display: flex; align-items: center; gap: 10px; }
+.copy-field input { flex: 1; }
+.copy-status { font-size: .85rem; color: #4b5563; }
+.actions { flex-wrap: wrap; margin-top: 20px; }
+.notice { background: #f3f4f6; border-left: 3px solid #9ca3af; padding: 12px; }
+.error { border-color: #d1d5db; }
+.checks { list-style: none; padding: 0; }
+.checks li { border-top: 1px solid #e5e7eb; padding: 16px 0; overflow-wrap: anywhere; }
+.checks strong, .checks span { display: block; }
+.checks span { margin: 4px 0 10px; }
+@media (max-width: 480px) { main { padding: 28px 16px; } .panel { padding: 18px; } .copy-field { gap: 6px; } .copy-field button { padding-inline: 10px; } }
