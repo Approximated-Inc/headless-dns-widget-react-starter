@@ -40,7 +40,7 @@ npm run dev
 
 Open **http://127.0.0.1:5173** exactly as printed by the server. The local server accepts only this loopback address; `localhost` and other hostnames are rejected. Enter a domain and click **Get setup instructions**. You do not need to change DNS to inspect instructions. Verification succeeds only when the expected records are published.
 
-The browser loads `https://cloud.approximated.app/dnswidget/headless.v1.js`. Your Node server uses the API key to obtain a short-lived token, and the browser uses that token to request instructions and verify records.
+The browser loads `https://cloud.approximated.app/dnswidget/headless.v1.js`, which targets the versioned `/api/dns/v1/` contract. Breaking API changes will use a new path and client version. Your Node server uses the API key to obtain a short-lived token, and the browser uses that token to request instructions and verify records.
 
 ## Design variations
 

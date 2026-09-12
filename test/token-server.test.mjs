@@ -30,7 +30,7 @@ test('only the server sends the API key; browser receives a non-cacheable token'
   assert.equal(reply.status, 200);
   assert.equal(reply.headers.get('cache-control'), 'no-store');
   assert.deepEqual(await reply.json(), { token: 'short-lived-token' });
-  assert.equal(sent.url, 'https://cloud.approximated.app/api/dns/token');
+  assert.equal(sent.url, 'https://cloud.approximated.app/api/dns/v1/token');
   assert.equal(sent.options.headers['api-key'], 'server-secret');
   assert.equal(sent.options.redirect, 'error');
 });

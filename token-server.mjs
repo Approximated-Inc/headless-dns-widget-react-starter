@@ -15,7 +15,7 @@ export function createTokenHandler({ apiKey, origin, fetchImpl = globalThis.fetc
     }
     if (!apiKey?.trim()) return send(503, { error: 'Set APX_API_KEY in your server .env file.' });
     try {
-      const upstream = await fetchImpl('https://cloud.approximated.app/api/dns/token', {
+      const upstream = await fetchImpl('https://cloud.approximated.app/api/dns/v1/token', {
         method: 'GET',
         headers: { 'api-key': apiKey, Accept: 'application/json' },
         cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(10_000)
