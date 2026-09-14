@@ -4,7 +4,7 @@ Build a DNS setup flow in your own React interface using the [Approximated headl
 
 This is a **headless** integration. React renders the interface; Approximated supplies provider-specific instructions and DNS verification results as JSON. It does not embed the ready-made widget or an iframe.
 
-The starter includes provider instructions, copyable record values, optional automatic setup links, verification results, retries, and a local server endpoint that creates short-lived widget tokens. Three selectable designs show different ways to present the same DNS setup flow.
+The starter includes provider instructions, copyable record values, automatic setup when supported by the DNS provider, verification results, retries, and a local server endpoint that creates short-lived widget tokens. Three selectable designs show different ways to present the same DNS setup flow.
 
 ## Availability
 
@@ -61,13 +61,13 @@ Switching designs preserves the entered domain, active requests, provider instru
 - `shared/design.js`: keyboard navigation and guided-step presentation derived from the session state.
 - `token-server.mjs`: `POST /api/dns-widget-token`, which returns only the token and disables response caching.
 - `server.mjs`: the local Vite and token server.
-- `test/`: token endpoint, session lifecycle, keyboard navigation, and guided-step regression tests.
+- `test/`: token endpoint, session lifecycle, keyboard navigation, guided steps, and rendered automatic/manual setup regression tests.
 
 Edit the `records` array in `shared/session.js` to request the A, CNAME, or TXT records your app needs. The default requests one CNAME for the domain the customer enters. In this API, `@` means the **full supplied domain**, including any subdomain. For `shop.customer.com`, Cloudflare's display name is `shop`.
 
 Render each returned field step's `label` and `value`: provider display values can differ from the request. An empty field value means leave that field blank. TTL values may be labels such as `Auto` or `1 Hour`.
 
-The interface renders text, links, and fields without inserting raw HTML. Manual steps remain available when automatic setup is unavailable. Verification shows the record address, expected value, actual values, and match state. Customers can retry partial or failed checks.
+The interface renders text, links, and fields without inserting raw HTML. When a record has a supported Domain Connect link, its provider group shows **Set up DNS automatically** with a prominent provider setup button. Customers review and approve each record at the provider, then return to verify. Each automatic button applies only to its identified record; any records that still need manual setup are listed. Manual instructions and copyable fields for automatic records stay under **Set up manually instead** in every design. Records without automatic setup keep their manual setup visible. Verification shows the record address, expected value, actual values, and match state. Customers can retry partial or failed checks.
 
 ## Integrate with your application
 

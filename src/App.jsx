@@ -53,13 +53,13 @@ export default function App() {
   const guide = guidedSteps(state);
 
   return <main data-design={design}>
-    <header className="demo-header"><p className="eyebrow">Custom domain setup</p><h1>Connect your domain</h1><p>Add a DNS record to point your domain to this application.</p></header>
+    <header className="demo-header"><p className="eyebrow">Custom domain setup</p><h1>Connect your domain</h1><p>Set up DNS to point your domain to this application.</p></header>
     <DesignTabs design={design} onChange={setDesign} />
     <div id="dns-design-panel" className="design-panel" role="tabpanel" aria-labelledby={`design-tab-${design}`} tabIndex={0}>
       {design === 'guided' ? <div className="guided-layout">
         <GuideSection number={1} title="Choose your domain" step={guide[0]}>{form}{notices}</GuideSection>
-        <GuideSection number={2} title="Add the record at your DNS provider" step={guide[1]}>
-          {instructions || <div className="empty-state"><p>Start with your domain above. We’ll find your provider and show the values to enter, one field at a time.</p></div>}
+        <GuideSection number={2} title="Set up your DNS records" step={guide[1]}>
+          {instructions || <div className="empty-state"><p>Start with your domain above. We’ll find your provider and show your DNS setup options.</p></div>}
         </GuideSection>
         <GuideSection number={3} title="Make sure your DNS records match" step={guide[2]}>
           {verification || <div className="empty-state"><p>After saving your changes, return here to check the records. We’ll show exactly what DNS returns.</p></div>}
@@ -67,7 +67,7 @@ export default function App() {
       </div> : <div className="setup-layout">
         <div className="setup-controls">
           {form}{notices}
-          {design === 'dashboard' && <p className="sidebar-note"><strong>Your provider stays in control</strong>Get the record values here, then save the changes in your DNS provider’s settings.</p>}
+          {design === 'dashboard' && <p className="sidebar-note"><strong>Your provider stays in control</strong>Review and approve automatic setup at your DNS provider, or follow the manual steps.</p>}
         </div>
         <div className="setup-workspace">
           {design === 'dashboard' && <div className="workspace-header">

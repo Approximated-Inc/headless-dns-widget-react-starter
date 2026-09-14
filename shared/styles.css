@@ -48,9 +48,19 @@ code { font-size: .92em; overflow-wrap: anywhere; }
 .record-type, .status-badge { flex-shrink: 0; padding: 4px 9px; border-radius: 5px; background: #f0f3f6; color: #526074; font: 650 .72rem/1.5 ui-monospace, monospace; }
 .status-badge { font-family: inherit; text-align: center; }
 .status-badge[data-phase="complete"] { color: #146655; background: #e4f3ed; }
-.automation-link { margin: 0 0 16px; }
+.automatic-setup { margin-top: 22px; padding: 20px; border: 1px solid #dfe3e9; border-radius: 10px; background: #f7f8fa; }
+.automatic-setup h3 { margin: 0 0 8px; font-size: 1.1rem; }
+.automatic-setup > p { margin: 8px 0; color: #495466; font-size: .95rem; }
+.automatic-setup .automatic-hint { font-size: .85rem; }
+.automatic-actions { display: grid; gap: 16px; list-style: none; padding: 0; margin: 18px 0 0; }
+.automatic-actions li { min-width: 0; }
+.automatic-record-label { display: block; margin-bottom: 8px; color: #576171; font: 600 .8rem/1.5 ui-monospace, monospace; overflow-wrap: anywhere; }
+a.automatic-setup-button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; max-width: 100%; border: 1px solid transparent; border-radius: 7px; padding: 10px 16px; color: var(--accent-text); background: var(--accent); font-size: .95rem; font-weight: 650; text-align: center; text-decoration: none; overflow-wrap: anywhere; }
+a.automatic-setup-button:hover { color: #fff; background: var(--accent-hover); }
+.automatic-setup .manual-required-copy { margin-top: 18px; padding-top: 14px; border-top: 1px solid #dfe3e9; font-size: .9rem; overflow-wrap: anywhere; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .manual-steps { border-radius: 8px; }
-.manual-steps > summary { padding: 8px 0; }
+.manual-steps > summary { min-height: 44px; padding: 8px 0; }
 .steps { padding-left: 24px; }
 .steps > li { padding-left: 4px; margin: 16px 0; }
 .steps p { margin: 0; }
@@ -137,6 +147,8 @@ main[data-design="guided"] .steps > li { margin: 22px 0; }
   .provider-heading, .workspace-header { gap: 10px; }
   .provider-heading { flex-wrap: wrap; }
   .record-heading { align-items: flex-start; }
+  .automatic-setup { padding: 16px; }
+  a.automatic-setup-button { width: 100%; }
   .copy-field { gap: 6px; }
   .copy-field button { padding-inline: 10px; }
   .record-fields { grid-template-columns: 1fr; gap: 10px; }

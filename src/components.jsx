@@ -1,9 +1,9 @@
 import { useId, useRef, useState } from 'react';
 import { safeLink, recordAddress, actualValues, verificationMessages } from '../shared/session.js';
 
-function ExternalLink({ href, children }) {
+function ExternalLink({ href, children, className }) {
   const url = safeLink(href);
-  return url ? <a href={url} target="_blank" rel="noopener noreferrer">{children}</a> : <span>{children}</span>;
+  return url ? <a href={url} className={className} target="_blank" rel="noopener noreferrer">{children}</a> : <span>{children}</span>;
 }
 
 function FieldStep({ step, compact = false }) {
@@ -36,29 +36,70 @@ function InstructionStep({ step, compact }) {
   return <p>{step.text}{step.value !== '' && <> <code>{step.value}</code></>}</p>;
 }
 
+function automationUrl(record) {
+  return record.automation?.kind === 'domain_connect' ? safeLink(record.automation.url) : null;
+}
+
+function ProviderCopy({ provider }) {
+  return <div className="provider-copy">
+    <p>{provider.message}</p>
+    {provider.message_link && <p><ExternalLink href={provider.message_link.url}>{provider.message_link.text}</ExternalLink></p>}
+    {safeLink(provider.login_url) && <p><ExternalLink href={provider.login_url}>Open {provider.name || 'your provider’s'} DNS settings</ExternalLink></p>}
+    {provider.lookup_status !== 'ok' && <p className="notice">We could not complete the provider lookup. Use these general instructions, check the domain spelling, or reload the instructions.</p>}
+  </div>;
+}
+
+function AutomaticSetup({ group, automaticRecords }) {
+  const headingId = useId();
+  const providerName = group.provider.name || 'your DNS provider';
+  const multiple = automaticRecords.length > 1;
+  const manualRecords = group.records.filter((record) => !automationUrl(record));
+  return <section className="automatic-setup" aria-labelledby={headingId}>
+    <h3 id={headingId}>Set up DNS automatically</h3>
+    <p>Click {multiple ? 'each button' : 'the button'} below to review and approve {multiple ? 'each DNS change' : 'this DNS change'} at {providerName}. Then return here to verify.</p>
+    <p className="automatic-hint">The provider opens in a new tab.{multiple && ' Each approval sets up only the record shown.'}</p>
+    <ul className="automatic-actions">{automaticRecords.map((record, index) => <li key={`${record.domain}-${record.type}-${record.host}-${index}`}>
+      <span className="automatic-record-label">{record.type} {recordAddress(record)}</span>
+      <ExternalLink href={automationUrl(record)} className="automatic-setup-button">
+        {multiple ? `Set up ${record.type} ${recordAddress(record)} with ${providerName}` : `Set up with ${providerName}`}
+        <span className="visually-hidden"> (opens in a new tab)</span>
+      </ExternalLink>
+    </li>)}</ul>
+    {manualRecords.length > 0 && <p className="manual-required-copy">Still needs manual setup: {manualRecords.map((record) => `${record.type} ${recordAddress(record)}`).join(', ')}. Follow the manual steps below for {manualRecords.length === 1 ? 'this record' : 'these records'}.</p>}
+  </section>;
+}
+
+function RecordFields({ record }) {
+  return <div className="record-fields">{record.steps.filter((step) => step.kind === 'field').map((step, index) => <FieldStep key={index} step={step} compact />)}</div>;
+}
+
 export function ProviderInstructions({ result, design }) {
   const compact = design === 'dashboard';
-  return result.domains.map((group) => <section className="panel provider-panel" key={group.apex_domain}>
-    <div className="provider-heading">
-      <div><p className="eyebrow">DNS provider</p><h2>{group.apex_domain}</h2></div>
-      {group.provider.name && <span className="status-badge">{group.provider.name}</span>}
-    </div>
-    <div className="provider-copy">
-      <p>{group.provider.message}</p>
-      {group.provider.message_link && <p><ExternalLink href={group.provider.message_link.url}>{group.provider.message_link.text}</ExternalLink></p>}
-      {safeLink(group.provider.login_url) && <p><ExternalLink href={group.provider.login_url}>Open {group.provider.name} DNS settings</ExternalLink></p>}
-      {group.provider.lookup_status !== 'ok' && <p className="notice">We could not complete the provider lookup. Use these general instructions, check the domain spelling, or reload the instructions.</p>}
-    </div>
-    {group.records.map((record, recordIndex) => <article className="record" key={`${record.domain}-${record.type}-${record.host}-${recordIndex}`}>
-      <div className="record-heading"><h3>{record.title}</h3><span className="record-type">{record.type}</span></div>
-      {safeLink(record.automation?.url) && <p className="automation-link"><ExternalLink href={record.automation.url}>Set up this record automatically</ExternalLink></p>}
-      {compact && <div className="record-fields">{record.steps.filter((step) => step.kind === 'field').map((step, index) => <FieldStep key={index} step={step} compact />)}</div>}
-      <details className="manual-steps" open={compact ? undefined : !safeLink(record.automation?.url)}>
-        <summary>{compact ? 'Provider instructions and manual steps' : 'Manual steps'}</summary>
-        <ol className="steps">{record.steps.map((step, index) => <li key={index}><InstructionStep step={step} compact={compact} /></li>)}</ol>
-      </details>
-    </article>)}
-  </section>);
+  return result.domains.map((group) => {
+    const automaticRecords = group.records.filter((record) => automationUrl(record));
+    const hasAutomation = automaticRecords.length > 0;
+    return <section className="panel provider-panel" key={group.apex_domain}>
+      <div className="provider-heading">
+        <div><p className="eyebrow">DNS provider</p><h2>{group.apex_domain}</h2></div>
+        {group.provider.name && <span className="status-badge">{group.provider.name}</span>}
+      </div>
+      {hasAutomation ? <AutomaticSetup group={group} automaticRecords={automaticRecords} /> : <ProviderCopy provider={group.provider} />}
+      {group.records.map((record, recordIndex) => {
+        const automatic = Boolean(automationUrl(record));
+        return <article className="record" key={`${record.domain}-${record.type}-${record.host}-${recordIndex}`}>
+          <div className="record-heading"><h3>{automatic ? recordAddress(record) : record.title}</h3><span className="record-type">{record.type}</span></div>
+          {hasAutomation && !automatic && <ProviderCopy provider={group.provider} />}
+          {compact && !automatic && <RecordFields record={record} />}
+          <details className="manual-steps" open={!automatic && !compact ? true : undefined}>
+            <summary>{automatic ? 'Set up manually instead' : compact ? 'Provider instructions and manual steps' : 'Manual steps'}</summary>
+            {hasAutomation && automatic && <ProviderCopy provider={group.provider} />}
+            {compact && automatic && <RecordFields record={record} />}
+            <ol className="steps">{record.steps.map((step, index) => <li key={index}><InstructionStep step={step} compact={compact} /></li>)}</ol>
+          </details>
+        </article>;
+      })}
+    </section>;
+  });
 }
 
 export function DomainForm({ domain, onDomainChange, target, phase, busy, start }) {
@@ -87,7 +128,7 @@ export function SessionNotices({ state, busy, retry }) {
 export function VerificationPanel({ state, busy, verify, start }) {
   return <section className="panel verification-panel" aria-labelledby="verify-heading">
     <h2 id="verify-heading">Check your DNS changes</h2>
-    <p>Save the record at your DNS provider, then check it here. DNS updates can take time to become visible.</p>
+    <p>Complete setup at your DNS provider, then check the records here. DNS updates can take time to become visible.</p>
     <div className="actions">
       <button id="verify-records" type="button" onClick={verify} disabled={busy || state.phase === 'complete' || state.error?.restart}>
         {state.phase === 'checking' ? 'Checking DNS…' : state.phase === 'complete' ? 'DNS verified' : 'Check DNS records'}

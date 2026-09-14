@@ -26,7 +26,7 @@ export function guidedSteps(state) {
     },
     {
       state: complete ? 'complete' : prepared && !attempted ? 'current' : 'waiting',
-      caption: complete ? 'Your DNS records match the requested values' : prepared ? 'Your record values are ready to enter at your provider' : 'Your exact record values will appear here'
+      caption: complete ? 'Your DNS records match the requested values' : prepared ? 'Your DNS setup options are ready below' : 'Your exact record values will appear here'
     },
     {
       state: complete ? 'complete' : prepared && attempted ? 'current' : 'waiting',
