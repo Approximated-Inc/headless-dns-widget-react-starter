@@ -61,7 +61,7 @@ function AutomaticSetup({ group, automaticRecords }) {
     <ul className="automatic-actions">{automaticRecords.map((record, index) => <li key={`${record.domain}-${record.type}-${record.host}-${index}`}>
       <span className="automatic-record-label">{record.type} {recordAddress(record)}</span>
       <ExternalLink href={automationUrl(record)} className="automatic-setup-button">
-        {multiple ? `Set up ${record.type} ${recordAddress(record)} with ${providerName}` : `Set up with ${providerName}`}
+        {multiple ? `Automatic setup: ${record.type} ${recordAddress(record)} with ${providerName}` : `Automatic setup with ${providerName}`}
         <span className="visually-hidden"> (opens in a new tab)</span>
       </ExternalLink>
     </li>)}</ul>

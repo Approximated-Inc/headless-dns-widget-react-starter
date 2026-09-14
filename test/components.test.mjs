@@ -51,7 +51,7 @@ for (const design of designs) {
     assert.match(firstLink, /class="automatic-setup-button"/);
     assert.match(firstLink, /target="_blank"/);
     assert.match(firstLink, /rel="noopener noreferrer"/);
-    assert.match(plainText(firstLink), /Set up with Cloudflare/);
+    assert.match(plainText(firstLink), /Automatic setup with Cloudflare/);
     assert.match(html, /Set up DNS automatically/);
     assert.match(html, /review and approve/i);
     assert.match(html, /return here to verify/i);
@@ -121,7 +121,7 @@ for (const design of designs) {
 
 test('automatic setup can name an unknown provider without rendering an empty label', () => {
   const html = render([record()], 'simple', { ...provider, name: null });
-  assert.match(plainText(html), /Set up with your DNS provider/);
+  assert.match(plainText(html), /Automatic setup with your DNS provider/);
 });
 
 test('the verified state still disables verification and reports matched records', () => {
