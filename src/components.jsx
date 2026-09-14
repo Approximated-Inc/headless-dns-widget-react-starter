@@ -1,9 +1,9 @@
 import { useId, useRef, useState } from 'react';
 import { safeLink, recordAddress, actualValues, verificationMessages } from '../shared/session.js';
 
-function ExternalLink({ href, children, className }) {
+function ExternalLink({ href, children, className, ariaLabel }) {
   const url = safeLink(href);
-  return url ? <a href={url} className={className} target="_blank" rel="noopener noreferrer">{children}</a> : <span>{children}</span>;
+  return url ? <a href={url} className={className} aria-label={ariaLabel} target="_blank" rel="noopener noreferrer">{children}</a> : <span>{children}</span>;
 }
 
 function FieldStep({ step, compact = false }) {
@@ -60,9 +60,8 @@ function AutomaticSetup({ group, automaticRecords }) {
     <p className="automatic-hint">The provider opens in a new tab.{multiple && ' Each approval sets up only the record shown.'}</p>
     <ul className="automatic-actions">{automaticRecords.map((record, index) => <li key={`${record.domain}-${record.type}-${record.host}-${index}`}>
       <span className="automatic-record-label">{record.type} {recordAddress(record)}</span>
-      <ExternalLink href={automationUrl(record)} className="automatic-setup-button">
-        {multiple ? `Automatic setup: ${record.type} ${recordAddress(record)} with ${providerName}` : `Automatic setup with ${providerName}`}
-        <span className="visually-hidden"> (opens in a new tab)</span>
+      <ExternalLink href={automationUrl(record)} className="automatic-setup-button" ariaLabel={`Set up automatically: ${record.type} ${recordAddress(record)} with ${providerName} (opens in a new tab)`}>
+        Set up automatically
       </ExternalLink>
     </li>)}</ul>
     {manualRecords.length > 0 && <p className="manual-required-copy">Still needs manual setup: {manualRecords.map((record) => `${record.type} ${recordAddress(record)}`).join(', ')}. Follow the manual steps below for {manualRecords.length === 1 ? 'this record' : 'these records'}.</p>}

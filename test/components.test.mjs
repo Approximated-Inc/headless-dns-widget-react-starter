@@ -51,7 +51,8 @@ for (const design of designs) {
     assert.match(firstLink, /class="automatic-setup-button"/);
     assert.match(firstLink, /target="_blank"/);
     assert.match(firstLink, /rel="noopener noreferrer"/);
-    assert.match(plainText(firstLink), /Automatic setup with Cloudflare/);
+    assert.equal(plainText(firstLink), "Set up automatically");
+    assert.match(firstLink, /aria-label="Set up automatically: CNAME shop.example.com with Cloudflare/);
     assert.match(html, /Set up DNS automatically/);
     assert.match(html, /review and approve/i);
     assert.match(html, /return here to verify/i);
@@ -74,9 +75,9 @@ for (const design of designs) {
     const primary = [...html.matchAll(/<a\b[^>]*class="automatic-setup-button"[^>]*>[\s\S]*?<\/a>/g)].map(([link]) => link);
     assert.equal(primary.length, 2);
     assert.match(primary[0], /href="https:\/\/connect.example.com\/shop"/);
-    assert.match(plainText(primary[0]), /CNAME.*shop.example.com/);
+    assert.match(primary[0], /aria-label="Set up automatically: CNAME shop.example.com/);
     assert.match(primary[1], /href="https:\/\/connect.example.com\/www"/);
-    assert.match(plainText(primary[1]), /CNAME.*www.example.com/);
+    assert.match(primary[1], /aria-label="Set up automatically: CNAME www.example.com/);
     assert.match(html, /Each approval sets up only the record shown/);
     assert.equal(details(html).filter((manual) => !/\bopen\b/.test(manual.match(/^<details\b[^>]*>/)[0])).length, 2);
   });
@@ -121,7 +122,7 @@ for (const design of designs) {
 
 test('automatic setup can name an unknown provider without rendering an empty label', () => {
   const html = render([record()], 'simple', { ...provider, name: null });
-  assert.match(plainText(html), /Automatic setup with your DNS provider/);
+  assert.match(html, /aria-label="Set up automatically: CNAME shop.example.com with your DNS provider/);
 });
 
 test('the verified state still disables verification and reports matched records', () => {
