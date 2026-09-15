@@ -1,4 +1,4 @@
-# Headless DNS widget starter for React
+# Headless DNS widget v2 starter for React
 
 Build a DNS setup flow in your own React interface using the [Approximated headless DNS API](https://approximated.app/docs/#dns-widget-headless).
 
@@ -8,7 +8,7 @@ The starter includes provider instructions, copyable record values, automatic se
 
 ## Availability
 
-This starter targets the upcoming headless DNS API release. The hosted `headless.v1.js` client and instructions endpoints must be deployed before live DNS setup works. You can install the starter, run its interface, build it, and run its tests in the meantime. The tests use stubs and do not need an API key or live DNS.
+This starter targets the DNS widget v2 API. The hosted `headless.v2.js` client and `/api/dns/v2` endpoints must be deployed before live DNS setup works. You can install the starter, run its interface, build it, and run its tests in the meantime. The tests use stubs and do not need an API key or live DNS.
 
 ## Hosted demo
 
@@ -40,7 +40,9 @@ npm run dev
 
 Open **http://127.0.0.1:5173** exactly as printed by the server. The local server accepts only this loopback address; `localhost` and other hostnames are rejected. Enter a domain and click **Get setup instructions**. You do not need to change DNS to inspect instructions. Verification succeeds only when the expected records are published.
 
-The browser loads `https://cloud.approximated.app/dnswidget/headless.v1.js`, which targets the versioned `/api/dns/v1/` contract. Breaking API changes will use a new path and client version. Your Node server uses the API key to obtain a short-lived token, and the browser uses that token to request instructions and verify records.
+The browser requests a token from `POST /api/dns-widget-token` on your app. Your Node server keeps the API key private and calls `GET https://cloud.approximated.app/api/dns/v2/token` to create a short-lived token, then returns only that token to the browser.
+
+The browser loads `https://cloud.approximated.app/dnswidget/headless.v2.js` and calls Approximated directly, using `https://cloud.approximated.app/api/dns/v2` as its API base. The client sends the scoped token to `POST https://cloud.approximated.app/api/dns/v2/token/instructions` for instructions and `POST https://cloud.approximated.app/api/dns/v2/token/check-records-match-exactly` for verification. It renews the token through `POST https://cloud.approximated.app/api/dns/v2/token/renew` while setup is active.
 
 ## Design variations
 
@@ -71,7 +73,7 @@ The interface renders text, links, and fields without inserting raw HTML. When a
 
 ## Integrate with your application
 
-Move the React components and shared modules into your frontend, include the versioned headless client, and implement the token route in your backend. In a server-rendered framework, initialize the browser client inside a client-side component.
+Move the React components and shared modules into your frontend, include `headless.v2.js`, and implement the token route in your backend. Keep the browser API URL set to `https://cloud.approximated.app/api/dns/v2`; only `/api/dns-widget-token` is served by your backend. In a server-rendered framework, initialize the browser client inside a client-side component.
 
 Before minting a token, authenticate the customer, check their permission to configure the domain, and apply your normal request limits and CSRF protection. Keep the API key in your server's secret store and preserve `Cache-Control: no-store` on the token response.
 
