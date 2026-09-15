@@ -36,6 +36,14 @@ test('passes the supplied domain with host @, then verifies the original result'
   assert.equal(h.clients[0].stopped, true);
 });
 
+test('session uses the v2 browser API URL with its scoped token', async () => {
+  const h = harness();
+  await h.session.start('shop.customer.com', 'domains.example.com');
+  assert.equal(h.clients[0].config.token, 'widget-token');
+  assert.equal(h.clients[0].config.api_url, 'https://cloud.approximated.app/api/dns/v2');
+  h.session.dispose();
+});
+
 test('changing domains discards an older verification and stops its client', async () => {
   const pending = deferred();
   const h = harness({ verify: () => pending.promise });

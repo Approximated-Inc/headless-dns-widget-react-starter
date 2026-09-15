@@ -58,6 +58,7 @@ export function createDnsSetup({ onChange, createClient, fetchImpl = globalThis.
       if (typeof token !== 'string' || !token) throw new Error('The token server returned an invalid token.');
       const activeClient = createClient({
         token,
+        api_url: 'https://cloud.approximated.app/api/dns/v2',
         fetch: (url, options) => fetchImpl(url, { ...options, signal }),
         onTokenRenewed: () => { if (current(id)) publish({ renewalWarning: null }); },
         onError: (error) => {
